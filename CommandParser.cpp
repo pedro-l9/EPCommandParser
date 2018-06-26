@@ -1,7 +1,12 @@
 #include "CommandParser.h"
 
-Command::Command (String a) {
-	name = a;
+Command::Command() {
+	name = "";
+	argCount = 0;
+}
+
+Command::Command(String _name) {
+	name = _name;
 	argCount = 0;
 }
 
@@ -17,10 +22,47 @@ void Command::printArgs(){
 	}
 }
 
-static void CommandParser::parseCommand(String text, Command* cmd){
-	int state = 0;
-	String arg, name = "";
+Term::Term() {
+	name = "";
+	state = false;
+}
 
+Term::Term(String _name, boolean _state) {
+	name = _name;
+	state = _state;
+}
+
+String Term::toString () {
+	return (name + (state ? "+" : "-"));
+}
+
+Expression::Expression(){
+	name = "";
+	termCount = 0;
+}
+
+Expression::Expression(String _name){
+	name = _name;
+	termCount = 0;
+}
+
+void Expression::addTerm(Term term){
+	terms[termCount] = term;
+	termCount++;
+}
+
+void Expression::printTerms(){
+	Serial.print("Terms: ");
+	for(int i = 0; i < termCount; i++){
+		Serial.print(terms[i].toString() + (i < termCount -1 ? "," : ";\n"));
+	}
+}
+
+void CommandParser::parseCommand(String text, Command* cmd){
+	int state = 0;
+	String arg;
+
+	cmd->name = "";
 	cmd->argCount = 0;
 
 	for(int i = 0; i < text.length(); i++){
@@ -28,10 +70,9 @@ static void CommandParser::parseCommand(String text, Command* cmd){
 		switch(state){
 			case 0:
 				if(c == '('){
-					cmd->name = name;
 					state++;
 				}else{
-					name += c;
+					cmd->name += c;
 				}
 				break;
 			case 1:
@@ -40,11 +81,33 @@ static void CommandParser::parseCommand(String text, Command* cmd){
 			case 2:
 				if(c == ',' || c == ')'){
 					state = 1;
-					cmd->addArg(arg);
+					if(arg != "") cmd->addArg(arg);
 				}else{
-					arg += c;
+					if(c != ' ') arg += c;
 				}
 				break;
+		}
+	}
+}
+
+void CommandParser::parseExpression(String text, Expression* exp){
+	int state = 0;
+	String name = "";
+	Term term;
+
+	exp->termCount = 0;
+
+	for(int i = 0; i < text.length(); i++){
+		char c = text.charAt(i);
+		if(c == '+' || c == '-'){
+			term.name = name;
+			term.state = c == '+';
+			
+			exp->addTerm(term);
+			
+			name = "";
+		}else{
+			if(c != ' ') name += c;
 		}
 	}
 }
