@@ -11,8 +11,7 @@ Command::Command(String _name) {
 }
 
 void Command::addArg(String arg){
-	args[argCount] = arg;
-	argCount++;
+	args[argCount++] = arg;
 }
 
 void Command::printArgs(){
@@ -47,8 +46,7 @@ Expression::Expression(String _name){
 }
 
 void Expression::addTerm(Term term){
-	terms[termCount] = term;
-	termCount++;
+	terms[termCount++] = term;
 }
 
 void Expression::printTerms(){
